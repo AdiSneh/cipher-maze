@@ -1,0 +1,2 @@
+class NotAnEdgeTileException(Exception):
+    pass
