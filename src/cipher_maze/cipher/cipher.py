@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
+from contextlib import contextmanager
 from string import ascii_letters
 from unittest.mock import patch
 
-from decorator import decorator
 from pydantic import BaseModel
 
 
@@ -28,10 +28,7 @@ class RepeatingCipher(Cipher):
         pass
 
 
+@contextmanager
 def ciphered_input(cipher):
-    @decorator
-    def _ciphered_input(func, *args, **kwargs):
-        with patch('cipher_maze.ui.input', cipher.ciphered_input):
-            return func(*args, **kwargs)
-
-    return _ciphered_input
+    with patch('cipher_maze.ui.input', cipher.ciphered_input):
+        yield
