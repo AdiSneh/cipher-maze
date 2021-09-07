@@ -36,6 +36,9 @@ class Point(BaseModel):
     def __eq__(self, other: 'Point'):
         return self.x == other.x and self.y == other.y
 
+    def __str__(self):
+        return f'({self.x}, {self.y})'
+
     def get_relative_direction_of(self, other: 'Point', /) -> Direction:
         diff = Point(x=other.x - self.x, y=other.y - self.y)
         return POINT_DIFF_DIRECTIONS.inverse[diff]
