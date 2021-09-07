@@ -5,17 +5,12 @@ from typing import List, Set, Optional, Union
 from bidict import bidict
 from pydantic import BaseModel
 
-from cipher_maze.exceptions import NotAnEdgeTileException
-
 
 class Direction(str, Enum):
     UP = 'up'
     DOWN = 'down'
     LEFT = 'left'
     RIGHT = 'right'
-
-    def __repr__(self):
-        return self.value
 
 
 class Point(BaseModel):
@@ -39,11 +34,19 @@ class Point(BaseModel):
     def __str__(self):
         return f'({self.x}, {self.y})'
 
+    def get_neighbors(self) -> List['Point']:
+        return [
+            self + Direction.UP,
+            self + Direction.DOWN,
+            self + Direction.LEFT,
+            self + Direction.RIGHT,
+        ]
+
     def get_relative_direction_of(self, other: 'Point', /) -> Direction:
         diff = Point(x=other.x - self.x, y=other.y - self.y)
         return POINT_DIFF_DIRECTIONS.inverse[diff]
 
-    def is_valid(self, max_x: int, max_y: int, min_x: int = 0, min_y: int = 0) -> bool:
+    def is_valid(self, *, min_x: int = 0, max_x: int, min_y: int = 0, max_y: int) -> bool:
         return all(
             min_ <= coordinate < max_
             for min_, coordinate, max_ in ((min_x, self.x, max_x), (min_y, self.y, max_y))
@@ -76,7 +79,7 @@ class Maze(BaseModel):
         self._remove_one_edge_wall(self.start)
         self._remove_one_edge_wall(self.end)
 
-    def __getitem__(self, item: Point):
+    def __getitem__(self, item: Point) -> Tile:
         if isinstance(item, Point):
             return self.tiles[item.x][item.y]
         else:
@@ -93,10 +96,10 @@ class Maze(BaseModel):
         elif point.x == self.width - 1:
             tile.walls.remove(Direction.RIGHT)
         else:
-            raise NotAnEdgeTileException()
+            raise KeyError(f'The point {point} is not an edge.')
 
 
-def generate_maze(width: int, height: int, start: Point, end: Point):
+def generate_maze(width: int, height: int, start: Point, end: Point) -> Maze:
     maze = Maze(width=width, height=height, start=start, end=end)
     _generate_maze(maze)
     return maze
@@ -106,7 +109,7 @@ def _generate_maze(maze: Maze, point: Optional[Point] = None):
     if not point:
         point = Point(x=0, y=0)
     maze[point].is_visited = True
-    neighbors = _get_neighbors(point)
+    neighbors = point.get_neighbors()
     shuffle(neighbors)
     for neighbor_point in neighbors:
         if not neighbor_point.is_valid(max_x=maze.width, max_y=maze.height) or maze[neighbor_point].is_visited:
@@ -116,12 +119,3 @@ def _generate_maze(maze: Maze, point: Optional[Point] = None):
         maze[neighbor_point].walls.remove(neighbor_point.get_relative_direction_of(point))
 
         _generate_maze(maze, neighbor_point)
-
-
-def _get_neighbors(point: Point) -> List[Point]:
-    return [
-        point + Direction.UP,
-        point + Direction.DOWN,
-        point + Direction.LEFT,
-        point + Direction.RIGHT,
-    ]

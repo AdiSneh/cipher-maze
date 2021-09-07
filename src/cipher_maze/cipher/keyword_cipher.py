@@ -2,7 +2,7 @@ from string import ascii_lowercase
 
 from pydantic import validator
 
-from cipher_maze.cipher.cipher import Cipher
+from .cipher import Cipher
 
 
 class KeywordCipher(Cipher):

@@ -1,5 +1,5 @@
-from cipher_maze.cipher.caesar_cipher import CaesarCipher
-from cipher_maze.cipher.cipher import RepeatingCipher
+from .caesar_cipher import CaesarCipher
+from .cipher import RepeatingCipher
 
 
 class CaesarRepeatingCipher(CaesarCipher, RepeatingCipher):

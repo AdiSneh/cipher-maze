@@ -1,7 +1,7 @@
 from builtins import input
 from typing import Set, Optional
 
-from cipher_maze.maze import Maze, Direction, Point
+from .maze import Maze, Direction, Point
 
 TILE_TEMPLATE_TOP = '#{up}#'
 TILE_TEMPLATE_MIDDLE = '{left}{player}{right}'
@@ -13,26 +13,26 @@ def print_maze(maze: Maze, /, *, player_location: Optional[Point] = None):
         for col in range(maze.width):
             tile = maze.tiles[col][row]
             print(TILE_TEMPLATE_TOP.format(
-                up=_get_character_for_direction(tile.walls, Direction.UP),
+                up=_get_wall_character(tile.walls, Direction.UP),
             ), end='')
         print()
         for col in range(maze.width):
             tile = maze.tiles[col][row]
             print(TILE_TEMPLATE_MIDDLE.format(
-                left=_get_character_for_direction(tile.walls, Direction.LEFT),
-                right=_get_character_for_direction(tile.walls, Direction.RIGHT),
+                left=_get_wall_character(tile.walls, Direction.LEFT),
+                right=_get_wall_character(tile.walls, Direction.RIGHT),
                 player='*' if player_location and player_location == Point(x=col, y=row) else ' '
             ), end='')
         print()
         for col in range(maze.width):
             tile = maze.tiles[col][row]
             print(TILE_TEMPLATE_BOTTOM.format(
-                down=_get_character_for_direction(tile.walls, Direction.DOWN),
+                down=_get_wall_character(tile.walls, Direction.DOWN),
             ), end='')
         print()
 
 
-def _get_character_for_direction(walls: Set[Direction], direction: Direction):
+def _get_wall_character(walls: Set[Direction], direction: Direction):
     return '#' if direction in walls else ' '
 
 
