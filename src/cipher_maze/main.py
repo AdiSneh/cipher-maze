@@ -2,8 +2,8 @@ from cipher_maze.cipher import ciphered_input, KeywordCipher, CaesarRepeatingCip
 from cipher_maze.game import play
 from cipher_maze.maze import generate_maze, Point
 
-MAZE_WIDTH = 5
-MAZE_HEIGHT = 5
+MAZE_WIDTH = 4
+MAZE_HEIGHT = 4
 maze = generate_maze(
     width=MAZE_WIDTH,
     height=MAZE_HEIGHT,
@@ -11,6 +11,6 @@ maze = generate_maze(
     end=Point(x=MAZE_WIDTH - 1, y=MAZE_HEIGHT - 1)
 )
 
-with ciphered_input(CaesarRepeatingCipher(right_shift=1)):
-# with ciphered_input(KeywordCipher(keyword='bcae')):
+# with ciphered_input(CaesarRepeatingCipher(right_shift=1)):
+with ciphered_input(KeywordCipher(keyword='testkey')):
     play(maze)

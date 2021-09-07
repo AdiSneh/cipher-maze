@@ -23,6 +23,8 @@ class RepeatingCipher(Cipher):
         self.update_permutations()
         return input_
 
+    # TODO: It's way too hard when the cipher changes after every guess.
+    #  Maybe only update after stepping on some sort of trigger, maybe only after moving.
     @abstractmethod
     def update_permutations(self):
         pass
