@@ -1,3 +1,4 @@
+from builtins import input
 from typing import Set, Optional
 
 from cipher_maze.maze import Maze, Direction, Point
@@ -45,6 +46,6 @@ def get_next_move() -> Direction:
     }
     direction = input(prompt)
     while direction not in user_direction_map:
-        print('Invalid direction.')
+        print(f'Invalid direction ({direction}).')
         direction = input(prompt)
     return user_direction_map[direction]
