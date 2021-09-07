@@ -2,7 +2,7 @@ from enum import Enum
 from random import shuffle
 from typing import List, Set
 
-from pydantic import BaseModel, PrivateAttr
+from pydantic import BaseModel
 
 from cipher_maze.exceptions import NotAnEdgeTileException
 
@@ -17,14 +17,22 @@ class Direction(str, Enum):
         return self.value
 
 
-class Tile(BaseModel):
-    walls: Set[Direction] = set(Direction)
-    is_visited: bool = False
-
-
 class Point(BaseModel):
     x: int
     y: int
+
+    def __add__(self, other: Direction):
+        if isinstance(other, Direction):
+            if other == Direction.UP:
+                return Point(x=self.x, y=self.y - 1)
+            elif other == Direction.DOWN:
+                return Point(x=self.x, y=self.y + 1)
+            elif other == Direction.LEFT:
+                return Point(x=self.x - 1, y=self.y)
+            elif other == Direction.RIGHT:
+                return Point(x=self.x + 1, y=self.y)
+        else:
+            raise NotImplementedError()
 
     def get_relative_direction_of(self, other: 'Point', /) -> Direction:
         x_diff = self.x - other.x
@@ -37,6 +45,17 @@ class Point(BaseModel):
             return Direction.LEFT
         if x_diff == -1:
             return Direction.RIGHT
+
+    def is_valid(self, max_x: int, max_y: int, min_x: int = 0, min_y: int = 0) -> bool:
+        return all(
+            min_ <= coordinate < max_
+            for min_, coordinate, max_ in ((min_x, self.x, max_x), (min_y, self.y, max_y))
+        )
+
+
+class Tile(BaseModel):
+    walls: Set[Direction] = set(Direction)
+    is_visited: bool = False
 
 
 class Maze(BaseModel):
@@ -52,6 +71,12 @@ class Maze(BaseModel):
         self._remove_one_edge_wall(self.start)
         self._remove_one_edge_wall(self.end)
 
+    def __getitem__(self, item: Point):
+        if isinstance(item, Point):
+            return self.tiles[item.x][item.y]
+        else:
+            raise KeyError(f'Expected a key of type Point but got {item} instead')
+
     def _remove_one_edge_wall(self, point: Point):
         tile = self[point]
         if point.y == 0:
@@ -65,10 +90,6 @@ class Maze(BaseModel):
         else:
             raise NotAnEdgeTileException()
 
-    def __getitem__(self, item):
-        if isinstance(item, Point):
-            return self.tiles[item.x][item.y]
-
 
 def generate_maze(width: int, height: int, start: Point, end: Point):
     maze = Maze(width=width, height=height, start=start, end=end)
@@ -81,7 +102,7 @@ def _generate_maze(maze: Maze, point: Point):
     neighbors = _get_neighbors(point)
     shuffle(neighbors)
     for neighbor_point in neighbors:
-        if not _is_valid(neighbor_point, width=maze.width, height=maze.height) or maze[neighbor_point].is_visited:
+        if not neighbor_point.is_valid(max_x=maze.width, max_y=maze.height) or maze[neighbor_point].is_visited:
             continue
 
         maze[point].walls.remove(point.get_relative_direction_of(neighbor_point))
@@ -92,20 +113,8 @@ def _generate_maze(maze: Maze, point: Point):
 
 def _get_neighbors(point: Point) -> List[Point]:
     return [
-        Point(x=point.x, y=point.y + 1),
-        Point(x=point.x, y=point.y - 1),
-        Point(x=point.x - 1, y=point.y),
-        Point(x=point.x + 1, y=point.y),
+        point + Direction.UP,
+        point + Direction.DOWN,
+        point + Direction.LEFT,
+        point + Direction.RIGHT,
     ]
-
-
-def _is_valid(point: Point, /, *, width: int, height: int) -> bool:
-    return all(
-        0 <= coordinate < max_
-        for coordinate, max_ in ((point.x, width), (point.y, height))
-    )
-
-
-# TODO: Func to print the maze (choose a GUI first I guess)
-maze = generate_maze(width=4, height=4, start=Point(x=0, y=0), end=Point(x=3, y=3))
-print([tile.walls for col in maze.tiles for tile in col])
