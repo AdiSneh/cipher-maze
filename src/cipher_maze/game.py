@@ -1,9 +1,9 @@
-from cipher_maze.keyboard import ciphered_input, Rot1Keyboard
+from cipher_maze.cipher import ciphered_input, Rot1Cipher
 from cipher_maze.maze import Maze
 from cipher_maze.ui import get_next_move, print_maze
 
 
-@ciphered_input(Rot1Keyboard)
+@ciphered_input(Rot1Cipher)
 def play(maze: Maze):
     current_location = maze.start
     print_maze(maze, player_location=current_location)
