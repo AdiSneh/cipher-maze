@@ -1,13 +1,13 @@
-from typing import Set
+from typing import Set, Optional
 
-from cipher_maze.maze import Maze, Direction
+from cipher_maze.maze import Maze, Direction, Point
 
 TILE_TEMPLATE_TOP = '#{up}#'
-TILE_TEMPLATE_MIDDLE = '{left} {right}'
+TILE_TEMPLATE_MIDDLE = '{left}{player}{right}'
 TILE_TEMPLATE_BOTTOM = '#{down}#'
 
 
-def print_maze(maze: Maze):
+def print_maze(maze: Maze, /, *, player_location: Optional[Point] = None):
     for row in range(maze.height):
         for col in range(maze.width):
             tile = maze.tiles[col][row]
@@ -20,6 +20,7 @@ def print_maze(maze: Maze):
             print(TILE_TEMPLATE_MIDDLE.format(
                 left=_get_character_for_direction(tile.walls, Direction.LEFT),
                 right=_get_character_for_direction(tile.walls, Direction.RIGHT),
+                player='*' if player_location and player_location == Point(x=col, y=row) else ' '
             ), end='')
         print()
         for col in range(maze.width):
@@ -32,3 +33,18 @@ def print_maze(maze: Maze):
 
 def _get_character_for_direction(walls: Set[Direction], direction: Direction):
     return '#' if direction in walls else ' '
+
+
+def get_next_move() -> Direction:
+    prompt = 'Where do you want to go? (U, D, L, R)'
+    user_direction_map = {
+        'U': Direction.UP,
+        'D': Direction.DOWN,
+        'L': Direction.LEFT,
+        'R': Direction.RIGHT,
+    }
+    direction = input(prompt)
+    while direction not in user_direction_map:
+        print('Invalid direction.')
+        direction = input(prompt)
+    return user_direction_map[direction]
