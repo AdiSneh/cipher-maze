@@ -1,5 +1,5 @@
-import string
 from abc import ABC, abstractmethod
+from string import ascii_letters
 from unittest.mock import patch
 
 from decorator import decorator
@@ -12,7 +12,7 @@ class Cipher(ABC, BaseModel):
 
     def ciphered_input(self, prompt: str = '') -> str:
         return input(prompt).translate(str.maketrans(
-            string.ascii_letters,
+            ascii_letters,
             self.lowercase_permutation + self.uppercase_permutation
         ))
 

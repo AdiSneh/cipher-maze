@@ -1,9 +1,10 @@
-from cipher_maze.cipher import ciphered_input, CaesarRepeatingCipher
+from cipher_maze.cipher import ciphered_input, CaesarRepeatingCipher, KeywordCipher
 from cipher_maze.maze import Maze
 from cipher_maze.ui import get_next_move, print_maze
 
 
-@ciphered_input(CaesarRepeatingCipher(right_shift=1))
+# @ciphered_input(CaesarRepeatingCipher(right_shift=1))
+@ciphered_input(KeywordCipher(keyword='bbb'))
 def play(maze: Maze):
     current_location = maze.start
     print_maze(maze, player_location=current_location)
