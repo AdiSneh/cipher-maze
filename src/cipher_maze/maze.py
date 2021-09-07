@@ -1,7 +1,8 @@
 from enum import Enum
 from random import shuffle
-from typing import List, Set
+from typing import List, Set, Optional, Union
 
+from bidict import bidict
 from pydantic import BaseModel
 
 from cipher_maze.exceptions import NotAnEdgeTileException
@@ -21,16 +22,14 @@ class Point(BaseModel):
     x: int
     y: int
 
-    def __add__(self, other: Direction):
-        if isinstance(other, Direction):
-            if other == Direction.UP:
-                return Point(x=self.x, y=self.y - 1)
-            elif other == Direction.DOWN:
-                return Point(x=self.x, y=self.y + 1)
-            elif other == Direction.LEFT:
-                return Point(x=self.x - 1, y=self.y)
-            elif other == Direction.RIGHT:
-                return Point(x=self.x + 1, y=self.y)
+    class Config:
+        frozen = True
+
+    def __add__(self, other: Union[Direction, 'Point']):
+        if isinstance(other, Point):
+            return Point(x=self.x + other.x, y=self.y + other.y)
+        elif isinstance(other, Direction):
+            return self + POINT_DIFF_DIRECTIONS[other]
         else:
             raise NotImplementedError()
 
@@ -38,22 +37,22 @@ class Point(BaseModel):
         return self.x == other.x and self.y == other.y
 
     def get_relative_direction_of(self, other: 'Point', /) -> Direction:
-        x_diff = self.x - other.x
-        y_diff = self.y - other.y
-        if y_diff == 1:
-            return Direction.UP
-        if y_diff == -1:
-            return Direction.DOWN
-        if x_diff == 1:
-            return Direction.LEFT
-        if x_diff == -1:
-            return Direction.RIGHT
+        diff = Point(x=other.x - self.x, y=other.y - self.y)
+        return POINT_DIFF_DIRECTIONS.inverse[diff]
 
     def is_valid(self, max_x: int, max_y: int, min_x: int = 0, min_y: int = 0) -> bool:
         return all(
             min_ <= coordinate < max_
             for min_, coordinate, max_ in ((min_x, self.x, max_x), (min_y, self.y, max_y))
         )
+
+
+POINT_DIFF_DIRECTIONS = bidict({
+    Direction.UP: Point(x=0, y=-1),
+    Direction.DOWN: Point(x=0, y=1),
+    Direction.LEFT: Point(x=-1, y=0),
+    Direction.RIGHT: Point(x=1, y=0),
+})
 
 
 class Tile(BaseModel):
@@ -96,11 +95,13 @@ class Maze(BaseModel):
 
 def generate_maze(width: int, height: int, start: Point, end: Point):
     maze = Maze(width=width, height=height, start=start, end=end)
-    _generate_maze(maze, maze.start)
+    _generate_maze(maze)
     return maze
 
 
-def _generate_maze(maze: Maze, point: Point):
+def _generate_maze(maze: Maze, point: Optional[Point] = None):
+    if not point:
+        point = Point(x=0, y=0)
     maze[point].is_visited = True
     neighbors = _get_neighbors(point)
     shuffle(neighbors)
