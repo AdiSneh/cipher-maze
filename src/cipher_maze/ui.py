@@ -3,37 +3,34 @@ from typing import Set, Optional
 
 from .maze import Maze, Direction, Point
 
-TILE_TEMPLATE_TOP = '#{up}#'
-TILE_TEMPLATE_MIDDLE = '{left}{player}{right}'
-TILE_TEMPLATE_BOTTOM = '#{down}#'
+HORIZONTAL_WALL_TEMPLATE = '{wall}# '
+MIDDLE_TILE_TEMPLATE = '{player}{right}'
 
 
 def print_maze(maze: Maze, /, *, player_location: Optional[Point] = None):
+    _print_horizontal_wall(maze, 0, Direction.UP)
     for row in range(maze.height):
+        print(_get_wall_character(maze.tiles[0][row].walls, Direction.LEFT), end='')
         for col in range(maze.width):
-            tile = maze.tiles[col][row]
-            print(TILE_TEMPLATE_TOP.format(
-                up=_get_wall_character(tile.walls, Direction.UP),
+            print(MIDDLE_TILE_TEMPLATE.format(
+                player='* ' if player_location and player_location == Point(x=col, y=row) else '  ',
+                right=_get_wall_character(maze.tiles[col][row].walls, Direction.RIGHT),
             ), end='')
         print()
-        for col in range(maze.width):
-            tile = maze.tiles[col][row]
-            print(TILE_TEMPLATE_MIDDLE.format(
-                left=_get_wall_character(tile.walls, Direction.LEFT),
-                right=_get_wall_character(tile.walls, Direction.RIGHT),
-                player='*' if player_location and player_location == Point(x=col, y=row) else ' '
-            ), end='')
-        print()
-        for col in range(maze.width):
-            tile = maze.tiles[col][row]
-            print(TILE_TEMPLATE_BOTTOM.format(
-                down=_get_wall_character(tile.walls, Direction.DOWN),
-            ), end='')
-        print()
+        _print_horizontal_wall(maze, row, Direction.DOWN)
+
+
+def _print_horizontal_wall(maze: Maze, row: int, direction: Direction):
+    print('# ', end='')
+    for col in range(maze.width):
+        print(HORIZONTAL_WALL_TEMPLATE.format(
+            wall=_get_wall_character(maze.tiles[col][row].walls, direction),
+        ), end='')
+    print()
 
 
 def _get_wall_character(walls: Set[Direction], direction: Direction):
-    return '#' if direction in walls else ' '
+    return '# ' if direction in walls else '  '
 
 
 def get_next_move() -> Direction:
