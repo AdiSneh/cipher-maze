@@ -3,8 +3,9 @@ from typing import Set, Optional
 
 from .maze import Maze, Direction, Point
 
-HORIZONTAL_WALL_TEMPLATE = '{wall}# '
-MIDDLE_TILE_TEMPLATE = '{player}{right}'
+
+WALL_CHARACTER = '# '
+EMPTY_CHARACTER = '  '
 
 
 def print_maze(maze: Maze, /, *, player_location: Optional[Point] = None):
@@ -12,25 +13,22 @@ def print_maze(maze: Maze, /, *, player_location: Optional[Point] = None):
     for row in range(maze.height):
         print(_get_wall_character(maze.tiles[0][row].walls, Direction.LEFT), end='')
         for col in range(maze.width):
-            print(MIDDLE_TILE_TEMPLATE.format(
-                player='* ' if player_location and player_location == Point(x=col, y=row) else '  ',
-                right=_get_wall_character(maze.tiles[col][row].walls, Direction.RIGHT),
-            ), end='')
+            player_character = '* ' if player_location and player_location == Point(x=col, y=row) else EMPTY_CHARACTER
+            right_wall = _get_wall_character(maze.tiles[col][row].walls, Direction.RIGHT)
+            print(f'{player_character}{right_wall}', end='')
         print()
         _print_horizontal_wall(maze, row, Direction.DOWN)
 
 
 def _print_horizontal_wall(maze: Maze, row: int, direction: Direction):
-    print('# ', end='')
+    print(WALL_CHARACTER, end='')
     for col in range(maze.width):
-        print(HORIZONTAL_WALL_TEMPLATE.format(
-            wall=_get_wall_character(maze.tiles[col][row].walls, direction),
-        ), end='')
+        print(f'{_get_wall_character(maze.tiles[col][row].walls, direction)}{WALL_CHARACTER}', end='')
     print()
 
 
 def _get_wall_character(walls: Set[Direction], direction: Direction):
-    return '# ' if direction in walls else '  '
+    return WALL_CHARACTER if direction in walls else EMPTY_CHARACTER
 
 
 def get_next_move() -> Direction:
