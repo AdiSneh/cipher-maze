@@ -1,6 +1,6 @@
 from enum import Enum
 from random import shuffle
-from typing import List, Set, Optional, Union
+from typing import List, Set, Optional, Union, Callable
 
 from bidict import bidict
 from pydantic import BaseModel
@@ -64,6 +64,8 @@ POINT_DIFF_DIRECTIONS = bidict({
 class Tile(BaseModel):
     walls: Set[Direction] = set(Direction)
     is_visited: bool = False
+    character: Optional[str]
+    callback: Optional[Callable]
 
 
 class Maze(BaseModel):
