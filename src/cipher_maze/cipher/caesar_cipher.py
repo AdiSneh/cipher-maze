@@ -10,10 +10,13 @@ class CaesarCipher(Cipher):
 
     def __init__(self, **data):
         super().__init__(**data)
-        self.lowercase_permutation = self._caesar_shift(ascii_lowercase, self.right_shift)
+        self.lowercase_permutation = self.caesar_shift(ascii_lowercase, self.right_shift)
         self.uppercase_permutation = self.lowercase_permutation.upper()
 
     @staticmethod
-    def _caesar_shift(text: str, right_shift: int) -> str:
+    def caesar_shift(text: str, right_shift: int) -> str:
         return text[right_shift:] + text[:right_shift]
 
+    def update_permutations(self):
+        self.lowercase_permutation = self.caesar_shift(self.lowercase_permutation, self.right_shift)
+        self.uppercase_permutation = self.lowercase_permutation.upper()

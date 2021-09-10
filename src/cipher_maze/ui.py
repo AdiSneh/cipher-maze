@@ -4,8 +4,9 @@ from typing import Set, Optional
 from .maze import Maze, Direction, Point
 
 
-WALL_CHARACTER = '# '
-EMPTY_CHARACTER = '  '
+CHARACTER_WIDTH = 2
+WALL_CHARACTER = '#'.ljust(CHARACTER_WIDTH)
+EMPTY_CHARACTER = ' '.ljust(CHARACTER_WIDTH)
 
 
 def print_maze(maze: Maze, /, *, player_location: Optional[Point] = None):
@@ -13,9 +14,10 @@ def print_maze(maze: Maze, /, *, player_location: Optional[Point] = None):
     for row in range(maze.height):
         print(_get_wall_character(maze.tiles[0][row].walls, Direction.LEFT), end='')
         for col in range(maze.width):
-            player_character = '* ' if player_location and player_location == Point(x=col, y=row) else EMPTY_CHARACTER
+            player_character = '*' if player_location and player_location == Point(x=col, y=row) else None
+            tile_character = maze.tiles[col][row].character or EMPTY_CHARACTER
             right_wall = _get_wall_character(maze.tiles[col][row].walls, Direction.RIGHT)
-            print(f'{player_character}{right_wall}', end='')
+            print(f'{(player_character or tile_character).ljust(CHARACTER_WIDTH)}{right_wall}', end='')
         print()
         _print_horizontal_wall(maze, row, Direction.DOWN)
 
